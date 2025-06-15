@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web蓝牙通信控制台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(13, 19, 33, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header {
+            background: rgba(10, 15, 30, 0.8);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+
+        .subtitle {
+            color: #b3e5fc;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 25px;
+            background: rgba(20, 30, 48, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f44336;
+        }
+
+        .status-indicator.connected {
+            background: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+        }
+
+        .status-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .device-info {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: flex;
+            padding: 25px;
+            gap: 25px;
+        }
+
+        .control-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: rgba(30, 40, 60, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #81d4fa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title i {
+            color: #4fc3f7;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(to right, #2196F3, #21CBF3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(33, 150, 243, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: linear-gradient(to right, #616161, #9e9e9e);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #disconnect {
+            background: linear-gradient(to right, #f44336, #ff9800);
+            box-shadow: 0 4px 10px rgba(244, 67, 54, 0.3);
+        }
+
+        #disconnect:hover {
+            box-shadow: 0 6px 15px rgba(244, 67, 54, 0.5);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 1rem;
+            color: #b3e5fc;
+        }
+
+        input {
+            background: rgba(20, 30, 48, 0.8);
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: white;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border: 1px solid #4fc3f7;
+            box-shadow: 0 0 8px rgba(79, 195, 247, 0.5);
+        }
+
+        input::placeholder {
+            color: #90a4ae;
+        }
+
+        .log-container {
+            flex: 1;
+            background: rgba(20, 30, 48, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #log {
+            flex: 1;
+            background: rgba(10, 15, 30, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-height: 300px;
+        }
+
+        #log p {
+            margin: 8px 0;
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: rgba(30, 40, 60, 0.5);
+            word-break: break-all;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-controls button {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background: rgba(69, 90, 100, 0.7);
+        }
+
+        .sent {
+            border-left: 3px solid #4fc3f7;
+        }
+
+        .received {
+            border-left: 3px solid #66bb6a;
+        }
+
+        .error {
+            border-left: 3px solid #f44336;
+            color: #ff8a80;
+        }
+
+        .info {
+            border-left: 3px solid #ffca28;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #b3e5fc;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-bluetooth-b"></i> Web蓝牙通信控制台</h1>
+            <p class="subtitle">连接、发送和接收蓝牙设备数据</p>
+        </header>
+        
+        <div class="status-bar">
+            <div class="status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span class="status-text" id="statusText">未连接</span>
+            </div>
+            <div class="device-info" id="deviceInfo">未选择设备</div>
+        </div>
+        
+        <div class="content">
+            <div class="control-panel">
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-link"></i> 设备连接</h2>
+                    <div class="btn-group">
+                        <button id="scan">
+                            <i class="fas fa-search"></i> 扫描并连接
+                        </button>
+                        <button id="disconnect" disabled>
+                            <i class="fas fa-unlink"></i> 断开连接
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-paper-plane"></i> 数据发送</h2>
+                    <div class="input-group">
+                        <label for="hexInput">输入十六进制数据：</label>
+                        <input type="text" id="hexInput" placeholder="例如: 0604030000ff0xff">
+                    </div>
+                    <div class="btn-group" style="margin-top: 15px;">
+                        <button id="send" disabled>
+                            <i class="fas fa-paper-plane"></i> 发送数据
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h2 class="panel-title"><i class="fas fa-bell"></i> 消息订阅</h2>
+                    <div class="btn-group">
+                        <button id="subscribe" disabled>
+                            <i class="fas fa-bell"></i> 启用通知
+                        </button>
+                        <button id="unsubscribe" disabled>
+                            <i class="fas fa-bell-slash"></i> 禁用通知
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="log-container">
+                <div class="log-header">
+                    <h2 class="panel-title"><i class="fas fa-terminal"></i> 通信日志</h2>
+                    <div class="log-controls">
+                        <button id="clearLog">
+                            <i class="fas fa-trash-alt"></i> 清空日志
+                        </button>
+                    </div>
+                </div>
+                <div id="log"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Web Bluetooth API 示例 | 支持现代浏览器如Chrome, Edge等</p>
+        </footer>
+    </div>
+
+    <script>
+        // 蓝牙相关变量
+        let device = null;
+        let server = null;
+        let characteristic = null;
+        let notificationEnabled = false;
+        //{"jsonrpc":"2.0","method":"startNotifications","params":{"serviceId":"00001523-1212-efde-1523-785feabcd123","characteristicId":"00001527-1212-efde-1523-785feabcd123"},"id":4}
+        // UUID配置
+        const serviceUUID = '00001523-1212-efde-1523-785feabcd123';
+        const characteristicUUID = '00001527-1212-efde-1523-785feabcd123';
+        
+        // DOM元素
+        const scanBtn = document.getElementById('scan');
+        const disconnectBtn = document.getElementById('disconnect');
+        const sendBtn = document.getElementById('send');
+        const subscribeBtn = document.getElementById('subscribe');
+        const unsubscribeBtn = document.getElementById('unsubscribe');
+        const clearLogBtn = document.getElementById('clearLog');
+        const hexInput = document.getElementById('hexInput');
+        const logDiv = document.getElementById('log');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const deviceInfo = document.getElementById('deviceInfo');
+        
+        // 日志函数
+        const log = (message, type = 'info') => {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('p');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logEntry.className = type;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+        
+        // 更新连接状态
+        const updateConnectionStatus = (connected) => {
+            if (connected) {
+                statusIndicator.className = 'status-indicator connected';
+                statusText.textContent = '已连接';
+                deviceInfo.textContent = device.name ? `设备: ${device.name}` : '设备已连接';
+                
+                disconnectBtn.disabled = false;
+                sendBtn.disabled = false;
+                subscribeBtn.disabled = false;
+                unsubscribeBtn.disabled = false;
+            } else {
+                statusIndicator.className = 'status-indicator';
+                statusText.textContent = '未连接';
+                deviceInfo.textContent = '未选择设备';
+                
+                disconnectBtn.disabled = true;
+                sendBtn.disabled = true;
+                subscribeBtn.disabled = true;
+                unsubscribeBtn.disabled = true;
+                subscribeBtn.textContent = '启用通知';
+                notificationEnabled = false;
+            }
+        };
+        
+        // 处理通知事件
+        const handleNotifications = (event) => {
+            const value = event.target.value;
+            // 将ArrayBuffer转换为十六进制字符串
+            const hexString = Array.from(new Uint8Array(value.buffer))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join(' ');
+            log(`收到数据: ${hexString}`, 'received');
+        };
+        
+        // 扫描并连接设备
+        scanBtn.addEventListener('click', async () => {
+            try {
+                log('正在扫描蓝牙设备...', 'info');
+                
+                device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: [serviceUUID]
+                });
+                
+                log(`找到设备: ${device.name || '未知设备'}`, 'info');
+                log('正在连接GATT服务器...', 'info');
+                
+                server = await device.gatt.connect();
+                
+                log('正在获取服务...', 'info');
+                const service = await server.getPrimaryService(serviceUUID);
+                
+                log('正在获取特征...', 'info');
+                characteristic = await service.getCharacteristic(characteristicUUID);
+                
+                log('蓝牙连接成功!', 'info');
+                updateConnectionStatus(true);
+                
+                // 监听断开事件
+                device.addEventListener('gattserverdisconnected', () => {
+                    log('设备已断开连接', 'error');
+                    updateConnectionStatus(false);
+                });
+                
+            } catch (error) {
+                log(`错误: ${error.message}`, 'error');
+            }
+        });
+        
+        // 断开连接
+        disconnectBtn.addEventListener('click', () => {
+            if (device && device.gatt.connected) {
+                try {
+                    if (characteristic && notificationEnabled) {
+                        characteristic.stopNotifications();
+                        characteristic.removeEventListener('characteristicvaluechanged', handleNotifications);
+                        log('通知已禁用', 'info');
+                    }
+                    
+                    device.gatt.disconnect();
+                    log('已断开蓝牙设备', 'info');
+                    
+                } catch (error) {
+                    log(`断开连接时出错: ${error.message}`, 'error');
+                }
+            } else {
+                log('没有已连接的设备', 'error');
+            }
+            
+            device = null;
+            server = null;
+            characteristic = null;
+            updateConnectionStatus(false);
+        });
+        
+        // 发送数据
+        sendBtn.addEventListener('click', async () => {
+            if (!characteristic) {
+                log('没有可用的特征用于发送数据', 'error');
+                return;
+            }
+
+            const hexString = hexInput.value.trim();
+            if (!hexString) {
+                log('请输入有效的十六进制字符串', 'error');
+                return;
+            }
+
+            try {
+                // 检查输入的十六进制字符串格式
+                const validHexPattern = /^[0-9a-fA-F]+$/;
+                if (!validHexPattern.test(hexString)) {
+                    log('无效的十六进制字符串。请仅使用十六进制字符(0-9, A-F)', 'error');
+                    return;
+                }
+                
+                // 确保字符串长度为偶数
+                if (hexString.length % 2 !== 0) {
+                    log('十六进制字符串长度应为偶数', 'error');
+                    return;
+                }
+
+                // 将十六进制字符串转换为Uint8Array
+                const byteArray = [];
+                for (let i = 0; i < hexString.length; i += 2) {
+                    const byte = parseInt(hexString.substr(i, 2), 16);
+                    if (isNaN(byte)) {
+                        log(`无效的十六进制字节: ${hexString.substr(i, 2)}`, 'error');
+                        return;
+                    }
+                    byteArray.push(byte);
+                }
+                
+                const data = new Uint8Array(byteArray);
+                log(`发送数据: ${hexString}`, 'sent');
+                
+                // 发送数据
+                await characteristic.writeValue(data);
+                log('数据发送成功', 'info');
+                
+            } catch (error) {
+                log(`发送数据时出错: ${error.message}`, 'error');
+            }
+        });
+        
+        // 启用通知
+        subscribeBtn.addEventListener('click', async () => {
+            if (!characteristic) {
+                log('没有可用的特征用于启用通知', 'error');
+                return;
+            }
+            
+            try {
+                if (!notificationEnabled) {
+                    await characteristic.startNotifications();
+                    characteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+                    notificationEnabled = true;
+                    log('通知已启用 - 等待接收数据...', 'info');
+                    subscribeBtn.innerHTML = '<i class="fas fa-bell"></i> 通知已启用';
+                }
+            } catch (error) {
+                log(`启用通知时出错: ${error.message}`, 'error');
+            }
+        });
+        
+        // 禁用通知
+        unsubscribeBtn.addEventListener('click', async () => {
+            if (!characteristic || !notificationEnabled) {
+                log('通知未启用', 'error');
+                return;
+            }
+            
+            try {
+                await characteristic.stopNotifications();
+                characteristic.removeEventListener('characteristicvaluechanged', handleNotifications);
+                notificationEnabled = false;
+                log('通知已禁用', 'info');
+                subscribeBtn.innerHTML = '<i class="fas fa-bell"></i> 启用通知';
+            } catch (error) {
+                log(`禁用通知时出错: ${error.message}`, 'error');
+            }
+        });
+        
+        // 清空日志
+        clearLogBtn.addEventListener('click', () => {
+            logDiv.innerHTML = '';
+            log('日志已清空', 'info');
+        });
+        
+        // 初始状态
+        updateConnectionStatus(false);
+        log('就绪 - 点击"扫描并连接"开始', 'info');
+        
+        // 输入框示例
+        hexInput.value = '0604030000ff';
+    </script>
+</body>
+</html>

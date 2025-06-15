@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Bluetooth Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #log {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            height: 150px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web Bluetooth Example</h1>
+    <button id="scan">Scan and Connect</button>
+    <button id="disconnect" disabled>Disconnect</button>
+    <button id="send" disabled>Send Data</button>
+
+    <div>
+        <label for="hexInput">Enter Hex String:</label>
+        <input type="text" id="hexInput" placeholder="e.g., 0604030000ff0xff">
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+        let device = null;
+        let server = null;
+        let characteristic = null;
+
+        const log = (message) => {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `<p>${message}</p>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        const serviceUUID = '00004f0e-1212-efde-1523-785feabcd123'; // 自定义服务 UUID
+        const characteristicUUID = '00001565-1212-efde-1523-785feabcd123'; // 自定义特征 UUID
+
+        document.getElementById('scan').addEventListener('click', async () => {
+            try {
+                log('Requesting Bluetooth device...');
+                device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,  // 如果你知道设备的名称或其它特征，可以使用 filters 来更精确地筛选
+                    optionalServices: [serviceUUID] // 将服务 UUID 添加到 optionalServices 中
+                });
+
+                log('Connecting to GATT server...');
+                server = await device.gatt.connect();
+
+                log('Getting service...');
+                const service = await server.getPrimaryService(serviceUUID);
+
+                log('Getting characteristic...');
+                characteristic = await service.getCharacteristic(characteristicUUID);
+
+                log('Connected successfully!');
+                document.getElementById('disconnect').disabled = false;
+                document.getElementById('send').disabled = false;
+            } catch (error) {
+                log(`Error: ${error.message}`);
+            }
+        });
+
+        document.getElementById('disconnect').addEventListener('click', () => {
+            if (device && device.gatt.connected) {
+                device.gatt.disconnect();
+                log('Disconnected from Bluetooth device.');
+            } else {
+                log('No device connected.');
+            }
+
+            document.getElementById('disconnect').disabled = true;
+            document.getElementById('send').disabled = true;
+        });
+
+        document.getElementById('send').addEventListener('click', async () => {
+            if (!characteristic) {
+                log('No characteristic available to send data.');
+                return;
+            }
+
+            const hexString = document.getElementById('hexInput').value.trim();  // 获取输入框中的十六进制字符串
+            if (!hexString) {
+                log('Please enter a valid hex string.');
+                return;
+            }
+
+            try {
+                // 检查输入的十六进制字符串格式是否有效
+                const validHexPattern = /^[0-9a-fA-F]+$/;
+                if (!validHexPattern.test(hexString)) {
+                    log('Invalid hex string. Please use only hexadecimal characters.');
+                    return;
+                }
+
+                // 将十六进制字符串转换为 Uint8Array
+                const byteArray = hexString.match(/.{2}/g).map(byte => parseInt(byte, 16));
+
+                log(`Sending data: ${hexString}`);
+                const data = new Uint8Array(byteArray);
+               console.log(data);
+                // 发送数据
+                await characteristic.writeValue(data);
+                log('Data sent successfully.');
+            } catch (error) {
+                log(`Error sending data: ${error.message}`);
+            }
+        });
+    </script>
+</body>
+</html>
+{"jsonrpc":"2.0","method":"write","params":{"serviceId":"00004f0e-1212-efde-1523-785feabcd123","characteristicId":"00001565-1212-efde-1523-785feabcd123","message":"AQEBfw==","encoding":"base64"},"id":7}
+{"jsonrpc":"2.0","method":"write","params":{"serviceId":"00004f0e-1212-efde-1523-785feabcd123","characteristicId":"00001565-1212-efde-1523-785feabcd123","message":"AQEBAA==","encoding":"base64"},"id":8}
