@@ -54,15 +54,18 @@
             logDiv.scrollTop = logDiv.scrollHeight;
         };
 
-        const serviceUUID = '00004f0e-1212-efde-1523-785feabcd123'; // 自定义服务 UUID
-        const characteristicUUID = '00001565-1212-efde-1523-785feabcd123'; // 自定义特征 UUID
+        const serviceUUID = '00001523-1212-efde-1523-785feabcd123';
+        const characteristicUUID = '00001527-1212-efde-1523-785feabcd123';
+        // const serviceUUID = '00004f0e-1212-efde-1523-785feabcd123'; // 自定义服务 UUID
+        // const characteristicUUID = '00001565-1212-efde-1523-785feabcd123'; // 自定义特征 UUID
 
         document.getElementById('scan').addEventListener('click', async () => {
             try {
                 log('Requesting Bluetooth device...');
                 device = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,  // 如果你知道设备的名称或其它特征，可以使用 filters 来更精确地筛选
-                    optionalServices: [serviceUUID] // 将服务 UUID 添加到 optionalServices 中
+                    // acceptAllDevices: true,  // 如果你知道设备的名称或其它特征，可以使用 filters 来更精确地筛选
+                    // optionalServices: [serviceUUID] // 将服务 UUID 添加到 optionalServices 中
+                    filters: [{ services: [serviceUUID] }],
                 });
 
                 log('Connecting to GATT server...');
