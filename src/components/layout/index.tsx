@@ -12,8 +12,8 @@ const Layout = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex justify-start items-center h-12 text-gray-800 shadow-xs">
-        <div className="h-7 my-auto ml-4">
+      <header className="flex justify-start items-center h-12 px-4 text-black shadow-xs">
+        <div className="h-7 my-auto">
           <Link to="/">
             <img className="h-7" src={code} alt="code" />
           </Link>
@@ -25,8 +25,8 @@ const Layout = () => {
               key={label}
               to={path}
               className={classNames({
-                "text-indigo-700": location.pathname === path,
-                "hover:text-indigo-500": 1,
+                "text-indigo-600": location.pathname === path,
+                "hover:text-[#7729f4]": 1,
               })}
             >
               {label}
