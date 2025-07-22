@@ -21,10 +21,10 @@ console.log(key, iv);
 //   if (err) throw err;
 // });
 
-// const cipher = crypto.createDecipheriv(algorithm, key, iv);
-// const input = fs.createReadStream("./cc");
-// const output = fs.createWriteStream("./cc.zip");
+const cipher = crypto.createDecipheriv(algorithm, key, iv);
+const input = fs.createReadStream("../essays/cc");
+const output = fs.createWriteStream("./cc.zip");
 
-// pipeline(input, cipher, output, (err) => {
-//   if (err) throw err;
-// });
+pipeline(input, cipher, output, (err) => {
+  if (err) throw err;
+});

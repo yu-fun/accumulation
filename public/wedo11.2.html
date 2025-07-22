@@ -433,8 +433,9 @@
                 log('正在扫描蓝牙设备...', 'info');
                 
                 device = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
-                    optionalServices: [serviceUUID]
+                    // acceptAllDevices: true,
+                    // optionalServices: [serviceUUID]
+                    filters: [{ services: [serviceUUID] }],
                 });
                 
                 log(`找到设备: ${device.name || '未知设备'}`, 'info');
